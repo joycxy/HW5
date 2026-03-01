@@ -1,13 +1,31 @@
-# Chat App
+# YouTube AI Chat Assistant (HW5)
 
-A React chatbot with Gemini AI, web search, user auth, MongoDB persistence, and client-side data analysis. Glassmorphism UI with streaming responses, CSV upload, and code execution.
+A React chatbot with Gemini AI, built on the original class chat app. Adds **YouTube channel analysis**: download channel metadata as JSON, drag-and-drop JSON into chat, and use four AI tools — generate image, plot metric vs time, play video, compute stats. Includes user auth (first/last name), MongoDB persistence, CSV upload, and streaming responses with a glassmorphism UI.
+
+## Changes from the original chat app (HW5)
+
+This repo started from the class “chat app” and was extended as follows:
+
+| Area | Change |
+|------|--------|
+| **Auth** | Create Account form now has **First name** and **Last name** (required). Stored in DB; returned on login. |
+| **Personalization** | AI is instructed to **greet the user by name** in the first message of each conversation (e.g. “Hi Joy Chen…”). |
+| **New tab** | **“YouTube Channel Download”** (visible when logged in). User enters a channel URL and max videos (1–100). Downloads metadata as JSON with progress bar; “Download JSON” and video preview list. |
+| **Public sample** | Running download for `https://www.youtube.com/@veritasium` with 10 videos can write **`public/veritasium_channel_data_10.json`** for graders. |
+| **JSON in chat** | **Drag-and-drop `.json`** (channel data) into chat. Validates `videos` array; shows “Loaded channel data: N videos” chip. Stored in session on server so tools can use it. |
+| **Four required tools** | All implemented with **exact names** for grading: **`generateImage`** (prompt + optional anchor image; enlarge + download), **`plot_metric_vs_time`** (metric vs release date chart; enlarge + download), **`play_video`** (query → clickable card, opens YouTube in new tab), **`compute_stats_json`** (mean, median, std, min, max for a numeric field). Tools run on the server; definitions and docs live in **`public/prompt_chat.txt`**. |
+| **System prompt** | **`public/prompt_chat.txt`** updated to a YouTube analysis assistant: knows about channel JSON, documents all four tools (name, purpose, args, when to use, return value), and prefers tool calls over hallucinating numbers. |
+| **Backend** | New routes: `POST/GET` channel download (yt-dlp), `POST` session channel-data, `POST` tools: `generateImage`, `plot_metric_vs_time`, `play_video`, `compute_stats_json`. Messages can store `imageData`; sessions store `channelData` and `uploadedImages` for tools. |
+| **Deploy** | **`render.yaml`** Blueprint with unique service names; **`DEPLOY_RENDER.md`** has full Render steps and “name in use” workaround (manual deploy without Blueprint). |
+
+Optional env: **`OPENAI_API_KEY`** (or `REACT_APP_OPENAI_API_KEY`) for **`generateImage`** (DALL-E 3). If unset, anchor image is returned when provided.
 
 ## How It Works
 
-- **Frontend (React)** – Login/create account, chat UI with streaming, drag-and-drop CSV/images, Recharts bar charts
-- **Backend (Express)** – REST API for users and sessions, connects to MongoDB
-- **AI (Gemini)** – Streaming chat, Google Search grounding, Python code execution, and function calling for client-side tools
-- **Storage (MongoDB)** – Users and chat sessions stored in `chatapp` database
+- **Frontend (React)** – Login/create account (first + last name), Chat + YouTube Channel Download tabs, chat UI with streaming, drag-and-drop CSV/JSON/images, Recharts charts, tool result UI (image, chart, video card, stats)
+- **Backend (Express)** – REST API for users, sessions, messages, channel download (yt-dlp), session channel-data, and four tool endpoints (`generateImage`, `plot_metric_vs_time`, `play_video`, `compute_stats_json`)
+- **AI (Gemini)** – Streaming chat, Google Search grounding, Python code execution, client-side CSV tools, and server-side YouTube tools (exact names above)
+- **Storage (MongoDB)** – Users (with first_name, last_name), sessions (messages, channelData, uploadedImages) in `chatapp` database
 
 ## API Keys & Environment Variables
 
@@ -49,6 +67,8 @@ One document per registered user.
 | `username` | string | Lowercase username |
 | `password` | string | bcrypt hash |
 | `email` | string | Email address (optional) |
+| `first_name` | string | First name (required on signup) |
+| `last_name` | string | Last name (required on signup) |
 | `createdAt` | string | ISO timestamp |
 
 #### Collection: `sessions`
@@ -63,6 +83,8 @@ One document per chat conversation.
 | `title` | string | Auto-generated name, e.g. `"Chat · Feb 18, 2:34 PM"` |
 | `createdAt` | string | ISO timestamp |
 | `messages` | array | Ordered list of messages (see below) |
+| `channelData` | object | *(optional)* YouTube channel JSON `{ videos, channel_url, … }` for tools |
+| `uploadedImages` | array | *(optional)* `[{ id, data, mimeType }]` for generateImage anchor |
 
 Each item in `messages`:
 
@@ -76,55 +98,9 @@ Each item in `messages`:
 
 ## Deploying to Render
 
-The repo includes a `render.yaml` Blueprint that configures both the backend (Web Service) and frontend (Static Site) in one file.
+See **[DEPLOY_RENDER.md](./DEPLOY_RENDER.md)** for full steps, name-uniqueness notes, and manual vs Blueprint setup.
 
-### Step-by-step
-
-**1. Deploy the backend first**
-
-Go to [render.com](https://render.com) → New → **Web Service** → connect your GitHub repo.
-
-| Setting | Value |
-|---------|-------|
-| Environment | Node |
-| Build Command | `npm install` |
-| Start Command | `node server/index.js` |
-
-Add this environment variable in the Render dashboard:
-
-| Variable | Value |
-|----------|-------|
-| `MONGODB_URI` | Your MongoDB Atlas connection string |
-
-Once deployed, copy the backend URL (e.g. `https://chatapp-backend.onrender.com`).
-
----
-
-**2. Deploy the frontend**
-
-New → **Static Site** → same repo.
-
-| Setting | Value |
-|---------|-------|
-| Build Command | `npm install && npm run build` |
-| Publish Directory | `build` |
-
-Add these environment variables:
-
-| Variable | Value |
-|----------|-------|
-| `REACT_APP_GEMINI_API_KEY` | Your Gemini API key |
-| `REACT_APP_API_URL` | Backend URL from step 1, e.g. `https://chatapp-backend.onrender.com` |
-
-> **Important:** `REACT_APP_*` variables are baked into the JavaScript bundle at build time. If you change them in the dashboard, you must trigger a new deploy of the static site.
-
----
-
-**Or use the Blueprint (both services at once)**
-
-New → **Blueprint** → connect your repo. Render reads `render.yaml` and creates both services. You'll be prompted to enter the four secrets (`MONGODB_URI`, `REACT_APP_GEMINI_API_KEY`, `REACT_APP_API_URL`) after creation.
-
-> **Note:** Because `REACT_APP_API_URL` must point to the backend's URL, which is only known after the backend is deployed, you may need to set `REACT_APP_API_URL` and re-deploy the static site after the first Blueprint run.
+**Quick summary:** The repo uses a `render.yaml` Blueprint. Service names use unique suffixes (e.g. `joy-hw5-api-9f2k8m4n1p7q`, `joy-hw5-frontend-2b6c0d3e5a9x`) to avoid Render’s global “name in use” errors. Set `REACT_APP_API_URL` on the frontend to your backend URL (e.g. `https://joy-hw5-api-9f2k8m4n1p7q.onrender.com`). If names still conflict, see DEPLOY_RENDER.md for manual deploy (no Blueprint).
 
 ---
 
@@ -212,7 +188,7 @@ All packages are installed via `npm install`. Key dependencies:
 
 ## Features
 
-- **Create account / Login** – Username + password, hashed with bcrypt
+- **Create account / Login** – Username, first name, last name, email, password; bcrypt hashing. AI greets by name on first message.
 - **Session-based chat history** – Each conversation is a separate session; sidebar lists all chats with delete option
 - **Streaming Gemini responses** – Text streams in real time with animated "..." while thinking; Stop button to cancel
 - **Google Search grounding** – Answers include cited web sources for factual queries
@@ -226,6 +202,9 @@ All packages are installed via `npm install`. Key dependencies:
 - **Tool routing logic** – The app automatically routes requests: client-side JS tools for simple stats, Python code execution for plots and complex models, Google Search for factual queries
 - **Markdown rendering** – AI responses render headers, lists, code blocks, tables, and links
 - **Image support** – Attach images via drag-and-drop, the 📎 button, or paste from clipboard (Ctrl+V)
+- **YouTube Channel Download tab** – Enter channel URL and max videos (1–100); download metadata JSON with progress; optional write of `public/veritasium_channel_data_10.json` for Veritasium
+- **Channel JSON in chat** – Drag-and-drop `.json` (channel data); validated and stored in session; AI context includes summary; tools use stored JSON
+- **Four YouTube tools (exact names)** – **generateImage** (prompt, optional anchor_image_id), **plot_metric_vs_time** (metric), **play_video** (query), **compute_stats_json** (field); all documented in `public/prompt_chat.txt`
 
 ## Chat System Prompt
 
