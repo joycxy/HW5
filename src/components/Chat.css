@@ -940,6 +940,174 @@
   word-break: break-all;
 }
 
+.csv-chip-error .csv-chip-meta { color: #fca5a5; }
+
+/* ── YouTube tool results ─────────────────────────────────────────────── */
+.tool-result-block {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.tool-result-image .tool-result-img {
+  max-width: 280px;
+  max-height: 280px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: block;
+}
+
+.tool-result-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.tool-result-actions button,
+.tool-result-actions a {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+  background: rgba(99, 102, 241, 0.25);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  border-radius: 8px;
+  color: #a5b4fc;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.video-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  text-decoration: none;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.video-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.video-card-thumb {
+  width: 120px;
+  height: 68px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.video-card-title {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.stats-block {
+  font-size: 0.9rem;
+}
+
+.stats-field {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.stats-dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0;
+}
+
+.stats-dl dt { color: rgba(255, 255, 255, 0.5); }
+.stats-dl dd { margin: 0; color: rgba(255, 255, 255, 0.85); }
+
+.metric-chart-wrap {
+  margin-bottom: 0.5rem;
+}
+
+.metric-chart-label {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 0.4rem;
+}
+
+.chart-tooltip {
+  background: rgba(15, 15, 35, 0.95);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #e2e8f0;
+}
+
+/* ── Lightbox ─────────────────────────────────────────────────────────── */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 95vw;
+  max-height: 90vh;
+  background: rgba(30, 30, 50, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 1.5rem;
+  overflow: auto;
+}
+
+.lightbox-img {
+  max-width: 100%;
+  max-height: 80vh;
+  display: block;
+  border-radius: 10px;
+}
+
+.lightbox-chart {
+  width: 600px;
+  height: 400px;
+  margin-bottom: 0.75rem;
+}
+
+.lightbox-download {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background: rgba(99, 102, 241, 0.8);
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
 /* ── Engagement chart ────────────────────────────────────────────────── */
 .engagement-chart-wrap {
   margin: 1rem 0 0.4rem;

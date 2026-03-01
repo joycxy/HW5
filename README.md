@@ -16,7 +16,7 @@ This repo started from the class “chat app” and was extended as follows:
 | **Four required tools** | All implemented with **exact names** for grading: **`generateImage`** (prompt + optional anchor image; enlarge + download), **`plot_metric_vs_time`** (metric vs release date chart; enlarge + download), **`play_video`** (query → clickable card, opens YouTube in new tab), **`compute_stats_json`** (mean, median, std, min, max for a numeric field). Tools run on the server; definitions and docs live in **`public/prompt_chat.txt`**. |
 | **System prompt** | **`public/prompt_chat.txt`** updated to a YouTube analysis assistant: knows about channel JSON, documents all four tools (name, purpose, args, when to use, return value), and prefers tool calls over hallucinating numbers. |
 | **Backend** | New routes: `POST/GET` channel download (yt-dlp), `POST` session channel-data, `POST` tools: `generateImage`, `plot_metric_vs_time`, `play_video`, `compute_stats_json`. Messages can store `imageData`; sessions store `channelData` and `uploadedImages` for tools. |
-| **Deploy** | **`render.yaml`** Blueprint with unique service names; **`DEPLOY_RENDER.md`** has full Render steps and “name in use” workaround (manual deploy without Blueprint). |
+| **Deploy** | Blueprint **disabled** (`render.yaml` → `render.yaml.disabled`) to avoid “name in use”; **`DEPLOY_RENDER.md`** has manual steps: create Web Service + Static Site by hand and choose your own names in the UI. |
 
 Optional env: **`OPENAI_API_KEY`** (or `REACT_APP_OPENAI_API_KEY`) for **`generateImage`** (DALL-E 3). If unset, anchor image is returned when provided.
 
@@ -98,9 +98,9 @@ Each item in `messages`:
 
 ## Deploying to Render
 
-See **[DEPLOY_RENDER.md](./DEPLOY_RENDER.md)** for full steps, name-uniqueness notes, and manual vs Blueprint setup.
+See **[DEPLOY_RENDER.md](./DEPLOY_RENDER.md)** for step-by-step instructions.
 
-**Quick summary:** The repo uses a `render.yaml` Blueprint. Service names use unique suffixes (e.g. `joy-hw5-api-9f2k8m4n1p7q`, `joy-hw5-frontend-2b6c0d3e5a9x`) to avoid Render’s global “name in use” errors. Set `REACT_APP_API_URL` on the frontend to your backend URL (e.g. `https://joy-hw5-api-9f2k8m4n1p7q.onrender.com`). If names still conflict, see DEPLOY_RENDER.md for manual deploy (no Blueprint).
+**Quick summary:** The Blueprint is **disabled** (renamed to `render.yaml.disabled`) so you can avoid “name already in use.” Create **Web Service** (backend) and **Static Site** (frontend) **manually** and choose the service names yourself in the Render UI. Set **REACT_APP_API_URL** on the frontend to your backend’s URL.
 
 ---
 

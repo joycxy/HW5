@@ -10,6 +10,55 @@ const CODE_EXEC_TOOL = { codeExecution: {} };
 
 export const CODE_KEYWORDS = /\b(plot|chart|graph|analyz|statistic|regression|correlat|histogram|visualiz|calculat|compute|run code|write code|execute|pandas|numpy|matplotlib|csv|data)\b/i;
 
+// ── YouTube tools (exact names for grading); executed on server via /api/tools/* ──
+export const YOUTUBE_TOOL_DECLARATIONS = [
+  {
+    name: 'generateImage',
+    description: 'Generate an image from a text prompt. Optionally use an anchor image (passed as anchor_image_id) to guide style or content. Returns image_url (data URL or URL) and mime_type. Use when the user asks to create, draw, or generate an image.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        prompt: { type: 'STRING', description: 'Text description of the image to generate.' },
+        anchor_image_id: { type: 'STRING', description: 'Optional. ID of an image the user attached (use when user dropped an image for style reference).' },
+      },
+      required: ['prompt'],
+    },
+  },
+  {
+    name: 'plot_metric_vs_time',
+    description: 'Plot a numeric metric (e.g. view_count, like_count, comment_count, duration) vs release date for the loaded channel videos. Returns points array and labels for rendering a chart. Use when the user asks for a plot, chart, or trend over time.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        metric: { type: 'STRING', description: 'Numeric field name: view_count, like_count, comment_count, duration, etc.' },
+      },
+      required: ['metric'],
+    },
+  },
+  {
+    name: 'play_video',
+    description: 'Resolve a video from the loaded channel data and return its title, thumbnail, and URL so the user can open it. Query can be "most viewed", "first", "2", or a title keyword. Use when the user asks to play, open, or watch a video.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        query: { type: 'STRING', description: 'e.g. "most viewed", "first", "2", or a word from the video title.' },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'compute_stats_json',
+    description: 'Compute mean, median, std, min, max, count, null_count for a numeric field in the channel JSON. Use when the user asks for stats, average, distribution, or summary of a numeric column.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        field: { type: 'STRING', description: 'Numeric field name: view_count, like_count, comment_count, duration, etc.' },
+      },
+      required: ['field'],
+    },
+  },
+];
+
 let cachedPrompt = null;
 
 async function loadSystemPrompt() {
@@ -181,6 +230,72 @@ export const chatWithCsvTools = async (history, newMessage, csvHeaders, executeF
     // Capture chart payloads so the UI can render them
     if (toolResult?._chartType) {
       charts.push(toolResult);
+    }
+
+    response = (
+      await chat.sendMessage([
+        { functionResponse: { name, response: { result: toolResult } } },
+      ])
+    ).response;
+  }
+
+  return { text: response.text(), charts, toolCalls };
+};
+
+const API = process.env.REACT_APP_API_URL || '';
+
+// ── YouTube tools: same loop but execute via server API ───────────────────────
+export const chatWithYouTubeTools = async (history, newMessage, sessionId) => {
+  const systemInstruction = await loadSystemPrompt();
+  const model = genAI.getGenerativeModel({
+    model: MODEL,
+    tools: [{ functionDeclarations: YOUTUBE_TOOL_DECLARATIONS }],
+  });
+
+  const baseHistory = history.map((m) => ({
+    role: m.role === 'user' ? 'user' : 'model',
+    parts: [{ text: m.content || '' }],
+  }));
+
+  const chatHistory = systemInstruction
+    ? [
+        {
+          role: 'user',
+          parts: [{ text: `Follow these instructions in every response:\n\n${systemInstruction}` }],
+        },
+        { role: 'model', parts: [{ text: "Got it! I'll follow those instructions." }] },
+        ...baseHistory,
+      ]
+    : baseHistory;
+
+  const chat = model.startChat({ history: chatHistory });
+
+  let response = (await chat.sendMessage(newMessage)).response;
+  const charts = [];
+  const toolCalls = [];
+
+  for (let round = 0; round < 5; round++) {
+    const parts = response.candidates?.[0]?.content?.parts || [];
+    const funcCall = parts.find((p) => p.functionCall);
+    if (!funcCall) break;
+
+    const { name, args } = funcCall.functionCall;
+    let toolResult;
+    try {
+      const res = await fetch(`${API}/api/tools/${name}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId, ...args }),
+      });
+      toolResult = await res.json();
+      if (!res.ok) toolResult = { error: toolResult.error || res.statusText };
+    } catch (e) {
+      toolResult = { error: e.message };
+    }
+
+    toolCalls.push({ name, args, result: toolResult });
+    if (toolResult?.points && name === 'plot_metric_vs_time') {
+      charts.push({ _chartType: 'metric_vs_time', ...toolResult });
     }
 
     response = (

@@ -6,6 +6,8 @@ export default function Auth({ onLogin }) {
   const [mode, setMode] = useState('login');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [first_name, setFirst_name] = useState('');
+  const [last_name, setLast_name] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,15 +19,21 @@ export default function Auth({ onLogin }) {
     try {
       const name = username.trim().toLowerCase();
       if (mode === 'create') {
-        await createUser(name, password, email.trim());
+        if (!first_name.trim() || !last_name.trim()) {
+          setError('First name and last name are required');
+          return;
+        }
+        await createUser(name, password, email.trim(), first_name.trim(), last_name.trim());
         setError('');
         setMode('login');
         setPassword('');
         setEmail('');
+        setFirst_name('');
+        setLast_name('');
       } else {
         const user = await findUser(name, password);
         if (!user) throw new Error('User not found or invalid password');
-        onLogin(user.username);
+        onLogin({ username: user.username, first_name: user.first_name, last_name: user.last_name });
       }
     } catch (err) {
       try {
@@ -56,14 +64,32 @@ export default function Auth({ onLogin }) {
             autoComplete="username"
           />
           {mode === 'create' && (
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
+            <>
+              <input
+                type="text"
+                placeholder="First name"
+                value={first_name}
+                onChange={(e) => setFirst_name(e.target.value)}
+                required
+                autoComplete="given-name"
+              />
+              <input
+                type="text"
+                placeholder="Last name"
+                value={last_name}
+                onChange={(e) => setLast_name(e.target.value)}
+                required
+                autoComplete="family-name"
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </>
           )}
           <input
             type="password"

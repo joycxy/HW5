@@ -1,11 +1,13 @@
-# Render Blueprint — defines both services in one file.
+# Render Blueprint — DISABLED to avoid "name already in use" on Render.
+# Render was still rejecting names from this file. Use manual setup (see DEPLOY_RENDER.md).
+# To re-enable: rename this file back to render.yaml and use New → Blueprint.
 # Docs: https://render.com/docs/blueprint-spec
 
 services:
 
   # ── Backend: Express API ────────────────────────────────────────────────────
   - type: web
-    name: chatapp-backend
+    name: joy-hw5-api-9f2k8m4n1p7q
     env: node
     plan: free
     buildCommand: npm install
@@ -16,7 +18,7 @@ services:
 
   # ── Frontend: React static site ────────────────────────────────────────────
   - type: static
-    name: chatapp-frontend
+    name: joy-hw5-frontend-2b6c0d3e5a9x
     plan: free
     buildCommand: npm install && ./node_modules/.bin/react-scripts build
     staticPublishPath: ./build
@@ -24,7 +26,7 @@ services:
       - key: REACT_APP_GEMINI_API_KEY
         sync: false   # set manually — baked into JS bundle at build time
       - key: REACT_APP_API_URL
-        sync: false   # set to the backend URL, e.g. https://chatapp-backend.onrender.com
+        sync: false   # set to backend URL after you create it
     routes:
       - type: rewrite
         source: /*

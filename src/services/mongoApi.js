@@ -12,10 +12,10 @@ const api = async (path, options = {}) => {
 
 // ── Users ────────────────────────────────────────────────────────────────────
 
-export const createUser = async (username, password, email = '') => {
+export const createUser = async (username, password, email = '', first_name = '', last_name = '') => {
   await api('/api/users', {
     method: 'POST',
-    body: JSON.stringify({ username, password, email }),
+    body: JSON.stringify({ username, password, email, first_name, last_name }),
   });
 };
 
@@ -24,7 +24,13 @@ export const findUser = async (username, password) => {
     method: 'POST',
     body: JSON.stringify({ username, password }),
   });
-  return data.ok ? { username: data.username } : null;
+  return data.ok
+    ? {
+        username: data.username,
+        first_name: data.first_name || '',
+        last_name: data.last_name || '',
+      }
+    : null;
 };
 
 // ── Sessions ─────────────────────────────────────────────────────────────────
@@ -48,6 +54,13 @@ export const updateSessionTitle = async (sessionId, title) => {
   return api(`/api/sessions/${sessionId}/title`, {
     method: 'PATCH',
     body: JSON.stringify({ title }),
+  });
+};
+
+export const saveSessionChannelData = async (sessionId, channelData) => {
+  return api(`/api/sessions/${sessionId}/channel-data`, {
+    method: 'POST',
+    body: JSON.stringify({ channelData }),
   });
 };
 

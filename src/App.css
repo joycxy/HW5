@@ -5,3 +5,38 @@
 .App {
   min-height: 100vh;
 }
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.main-tabs {
+  flex-shrink: 0;
+  display: flex;
+  gap: 0;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.main-tabs button {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: Inter, sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.main-tabs button:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.main-tabs button.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
