@@ -45,6 +45,35 @@ Render service names are **global**. The repo used to have a **Blueprint** (`ren
 
 ---
 
+## “There’s an error above” with no red text
+
+Render sometimes shows this without highlighting a field. Try the following:
+
+1. **Name**
+   - Use **only** lowercase letters, numbers, and hyphens (e.g. `my-hw5-api`). No spaces, no underscores.
+   - Must be at least a few characters.
+
+2. **Required fields**
+   - **Web Service:** Name, **Build command** (`npm install`), **Start command** (`node server/index.js`). Leave **Root directory** empty (don’t type a space or `.`).
+   - **Static Site:** Name, **Build command** (`npm install && ./node_modules/.bin/react-scripts build`), **Publish directory** exactly `build`. Leave **Root directory** empty.
+
+3. **Environment (Web Service)**
+   - Add **one** variable: Key = `MONGODB_URI`, Value = your connection string. If the row looks incomplete (e.g. key or value empty), fill both and try again.
+
+4. **Scroll to the top** of the form and check each section for a red message or red border.
+
+5. **Branch**
+   - Use the default branch (e.g. `master` or `main`). If you changed it, set it back to the branch you pushed.
+
+6. **Browser**
+   - Try another browser or an incognito/private window, then create the service again.
+
+7. **Create without env vars, then add them**
+   - **Web Service:** You can create with **no** environment variables, then in the dashboard go to **Environment** → Add `MONGODB_URI` → Save. Trigger a **Manual Deploy**.
+   - **Static Site:** Same idea: create first, then add `REACT_APP_GEMINI_API_KEY` and `REACT_APP_API_URL`, Save, and redeploy.
+
+---
+
 ## Reference: fields at a glance
 
 | Service   | Type         | Build command                                               | Start / Publish      |

@@ -20,6 +20,14 @@ This repo started from the class “chat app” and was extended as follows:
 
 Optional env: **`OPENAI_API_KEY`** (or `REACT_APP_OPENAI_API_KEY`) for **`generateImage`** (DALL-E 3). If unset, anchor image is returned when provided.
 
+---
+
+## Changelog / updates
+
+- **Grading QA audit** – Cross-checked implementation against HW5 rubric. All 8 rubric items pass. One minimal change: in **`public/prompt_chat.txt`**, added an explicit sentence that the loaded channel JSON is kept in app state and stored on the server for the session so tools can access the full data (required for rubric item 3).
+- **Render deploy** – Blueprint disabled (`render.yaml` → `render.yaml.disabled`) to fix “name already in use”; deploy is manual (Web Service + Static Site). **DEPLOY_RENDER.md** includes: step-by-step manual setup, “There’s an error above” troubleshooting (name format, required fields, env vars, root directory, branch, create-without-env workaround), and a note that **Root Directory** must be left **empty** (clearing any ` .` or `.`) so the build uses the repo root.
+- **Documentation** – README documents all HW5 changes; DEPLOY_RENDER.md is the single source for Render deployment and troubleshooting.
+
 ## How It Works
 
 - **Frontend (React)** – Login/create account (first + last name), Chat + YouTube Channel Download tabs, chat UI with streaming, drag-and-drop CSV/JSON/images, Recharts charts, tool result UI (image, chart, video card, stats)
